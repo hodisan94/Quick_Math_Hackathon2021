@@ -1,7 +1,8 @@
 import socket
 import time
 from threading import Thread
-
+####hiii omri
+### daniel fierst commit
 class Server:
     def __init__(self,tcp_port):
         self.udp_port = 13117
