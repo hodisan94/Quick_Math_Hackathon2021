@@ -3,6 +3,7 @@ import struct
 #https://docs.python.org/3/library/struct.html
 import time
 import msvcrt
+import colors
 
 
 class Client:
@@ -51,7 +52,7 @@ class Client:
         listen for servers
         :return:
         '''
-        print("Client started, listening for offer requests...")
+        colors.print_Green("Client started, listening for offer requests...")
         socket_exists = False
         while not socket_exists:
             try:
@@ -78,7 +79,7 @@ class Client:
             magic_cookie_received,message_type_received,server_port = struct.unpack("IbH",message)
             #sainty check
             if (magic_cookie_received==self.magic_cookie and message_type_received==self.message_type):
-                print("Received offer from ",address[0],",attempting to connect...")
+                colors.print_Green("Received offer from ",address[0],",attempting to connect...")
                 self.connect(address,server_port)
                 break
 
@@ -107,22 +108,22 @@ class Client:
         :return:
         '''
         welcome_message = self.__tcp_socket.recv(1024).decode('UTF-8')
-        print(welcome_message)
+        colors.print_Cyan(welcome_message)
         #TODO: decide which library to use - msvcrt or keyboard
         #msvcrt
         answer = msvcrt.getch()
         if (answer!='\000' and answer!='\xe0' and answer!=None):
             self.__tcp_socket.send(answer)
         end_message = self.__tcp_socket.recv(1024).decode('UTF-8')
-        print(end_message)
+        colors.print_Green(end_message)
         try:
             self.__tcp_socket.close()
-            print("Server disconnected, listening for offer requests...")
+            colors.print_Red("Server disconnected, listening for offer requests...")
             self.__tcp_port = None
             self.__tcp_socket = None
             self.open_for_offers()
         except:
-            print("could not close tcp socket")
+            colors.print_Red("could not close tcp socket")
             #TODO: what todo if we goes here?
             return False
 
