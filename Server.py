@@ -67,7 +67,7 @@ class Server:
 
 
     def start_game(self):
-#
+##
         nice_msg = "Welcome to Quick Math.'\n \"" \
                    "Player 1: " + self.player_client1_name +"\n " \
                    "Player 2: " + self.player_client2_name +"\n " \
