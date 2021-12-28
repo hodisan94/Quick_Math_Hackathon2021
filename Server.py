@@ -3,6 +3,9 @@ import socket
 import time
 from threading import Thread , Event
 
+import colors
+
+
 class Server:
     def __init__(self,tcp_port):
         self.udp_port = 13117
@@ -67,7 +70,10 @@ class Server:
             time.sleep(0.1)
 
         #waiting 10 sec before starting the game for the clients
-        time.sleep(10)
+        for i in range(0,9):
+            colors.print_Cyan(10-i)
+            time.sleep(1)
+        #time.sleep(10)
         the_winner_msg = self.start_game()
 
         self.player_client1.send(bytes(the_winner_msg,'UTF-8'))
@@ -138,8 +144,8 @@ class Server:
         limit_time = right_now+10
         while event.is_set() is False:
             try:
-                winner_info_list[0] = player.recv(1024)
-                winner_info_list[1] = player
+                winner_info_list[0] = player.recv(1024) #answer
+                winner_info_list[1] = player #the player
             except:
                 pass
             #reached time limit
@@ -148,7 +154,7 @@ class Server:
                 break
             #check if we got an answer by now
             if len(winner_info_list) != 0:
-                event.set
+                event.set()
                 break
 
     # only need to finish running the server...and maybe change to format of the message that we are sending
