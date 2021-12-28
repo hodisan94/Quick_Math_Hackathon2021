@@ -1,8 +1,8 @@
+import random
 import socket
 import time
-from threading import Thread
+from threading import Thread , Event
 
-#daniel first commit
 class Server:
     def __init__(self,tcp_port):
         self.udp_port = 13117
@@ -45,14 +45,17 @@ class Server:
                 client_connection , client_address = self.tcp_socket.accept()
                 self.player_client1 = client_connection
                 self.player_client1_name = self.player_client1.recv(1024).decode('UTF-8')
+                print("Received offer from " +str(self.player_client1) + ", attempting to connect...")
             elif self.player_client2 is None:
                 client_connection, client_address = self.tcp_socket.accept()
                 self.player_client2 = client_connection
                 self.player_client2_name = self.player_client1.recv(1024).decode('UTF-8')
+                print("Received offer from " +str(self.player_client1) + ", attempting to connect...")
 
-    #TODO start game , end game, measure time , start server....
 
-    def start_server(self):
+
+
+    def start_server_end_server(self):
         t1 = Thread(target=self.broadcast(), daemon=True)
         t2 = Thread(target=self.looking_for_mighty_and_fearless_players(), daemon=True)
 
@@ -60,19 +63,106 @@ class Server:
         t2.start()
 
         #join?
+        while not self.check_players():
+            time.sleep(0.1)
 
         #waiting 10 sec before starting the game for the clients
         time.sleep(10)
-        self.start_game()
+        the_winner_msg = self.start_game()
+
+        self.player_client1.send(bytes(the_winner_msg,'UTF-8'))
+        self.player_client2.send(bytes(the_winner_msg,'UTF-8'))
+
+        self.tcp_socket.close()
+        time.sleep(1.5)
+        print("Game over, sending out offer requests...")
+        #self.end_game_and_close_connection(the_winner_msg)
 
 
     def start_game(self):
-###
+        #selecting two random numbers that the sum of them wont be greather then 9
+        num1 = random.randint(0,9)
+        num2 = random.randint(0,(9-num1))
+        res = num1+num2
         nice_msg = "Welcome to Quick Math.'\n \"" \
                    "Player 1: " + self.player_client1_name +"\n " \
                    "Player 2: " + self.player_client2_name +"\n " \
                    "==\n"\
-                   "Please answer the following question as fast as you can:"
+                   "Please answer the following question as fast as you can:\n"\
+                   "How much is " +str(num1) + "+" + str(num2)+"?"
+
+        #sending the starting msg to both clients
+        self.player_client1.send(bytes(nice_msg, 'UTF-8'))
+        self.player_client2.send(bytes(nice_msg, 'UTF-8'))
+
+        pause_event = Event()
+        who_won_who_won=[]
+
+        t_for_player1 = Thread(target=self.get_answer, args=[self.player_client1, pause_event, who_won_who_won, 1])
+        t_for_player2 = Thread(target=self.get_answer, args=[self.player_client2, pause_event, who_won_who_won, 2])
+
+        t_for_player1.start()
+        t_for_player2.start()
+
+        #wating and giving the player time to answer the question
+        while pause_event.is_set() is False:
+            time.sleep(0.1)
+
+
+        finish_msg = "Game over!\n"\
+                     "The correct answer was " +str(res)+"!\n"
+
+        # if we got an answer from one of the player we will check who it is and who won
+        if len(who_won_who_won) != 0:
+            if who_won_who_won[1] == self.player_client1:
+                if str(who_won_who_won[0].decode('UTF-8')) == str(res): #hope it will work
+                    finish_msg = finish_msg + f"Congratulations to the winner: {self.player_client1_name}"
+                else:
+                    finish_msg = finish_msg + f"Congratulations to the winner: {self.player_client2_name}"
+
+            elif who_won_who_won[0] == self.player_client2:
+                if str(who_won_who_won[1].decode('UTF-8')) == str(res): #hope it will work
+                    finish_msg = finish_msg + f"Congratulations to the winner: {self.player_client2_name}"
+                else:
+                    finish_msg = finish_msg + f"Congratulations to the winner: {self.player_client1_name}"
+
+        #no one answerd in the given time so its a draw
+        else:
+            finish_msg = finish_msg + "both teams are losers...so we had to call for a draw."
+
+        return finish_msg
+
+
+    def get_answer(self , player , event , winner_info_list , num):
+        right_now = time.time()
+        limit_time = right_now+10
+        while event.is_set() is False:
+            try:
+                winner_info_list[0] = player.recv(1024)
+                winner_info_list[1] = player
+            except:
+                pass
+            #reached time limit
+            if time.time() > limit_time:
+                event.set()
+                break
+            #check if we got an answer by now
+            if len(winner_info_list) != 0:
+                event.set
+                break
+
+    # only need to finish running the server...and maybe change to format of the message that we are sending
+
+
+
+    # def end_game_and_close_connection(self,msg):
+    #     #starting with sending each player a message with the game result
+    #     self.player_client1.send(bytes(msg,'UTF-8'))
+    #     self.player_client2.send(bytes(msg,'UTF-8'))
+    #
+    #     self.tcp_socket.close()
+    #     time.sleep(1.5)
+    #     print("Game over, sending out offer requests...")
 
 
 
