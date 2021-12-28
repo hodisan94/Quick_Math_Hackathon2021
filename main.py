@@ -12,8 +12,8 @@ def print_hi(name):
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     server = Server(2049)
-    client = Client("Maccabi")
-    client_ = Client("not_Maccabi")
+    client = Client("Maccabi",2049)
+    client_ = Client("not_Maccabi",2049)
 
     serverThread = Thread(target=server.start_server_end_server(),daemon=True)
     clientThread = Thread(target=client.start())
@@ -21,6 +21,7 @@ if __name__ == '__main__':
 
 
     serverThread.start()
+
     clientThread.start()
     client_.start()
 

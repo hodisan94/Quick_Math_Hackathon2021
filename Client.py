@@ -79,7 +79,7 @@ class Client:
             """
             message,address = self.__udp_socket.recvfrom(2048)
             #TODO : talk about the message foramt!!!
-            magic_cookie_received,message_type_received,server_port = struct.unpack("hhi",message)
+            magic_cookie_received,message_type_received,server_port = struct.unpack("IbH",message)
             #sainty check
             if (magic_cookie_received==self.magic_cookie and message_type_received==self.message_type):
                 colors.print_Green("Received offer from ",address[0],",attempting to connect...")
