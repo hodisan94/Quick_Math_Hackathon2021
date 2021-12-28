@@ -104,9 +104,10 @@ class Client:
             self.__tcp_socket.send(bytes(self.team_name + "\n",'UTF-8'))
             print("103")
             return self.play()
-        except:#connect failed - go back to "client state : Looking for a server"
+        except socket.error as err:#connect failed - go back to "client state : Looking for a server"
             #self.__tcp_socket.close()
-            colors.print_Red("There were problems with this server...\n(wait until you see what it looks like ...).\nNo matter, there are plenty of other servers in Hackathon so I'm back to listening for offer requests from other servers...")
+            print(err)
+            colors.print_Red("There were problems with this server...\n(wait until you see how he looks like ...)\nNo matter, there are plenty of other servers in Hackathon so I'm back to listening for offer requests from other servers...")
             try:
                 self.__tcp_socket.close()
             except socket.error:

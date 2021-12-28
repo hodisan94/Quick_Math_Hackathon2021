@@ -173,7 +173,7 @@ class Server:
 
 if __name__ == '__main__':
     new_server = Server(2049)
-    serverT = Thread(target=new_server.start_server_end_server(),daemon=True)
+    serverT = Thread(target=new_server.start_server_end_server())
     serverT.start()
     #new_server.start_server_end_server()
 

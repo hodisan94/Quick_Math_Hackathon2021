@@ -16,8 +16,8 @@ if __name__ == '__main__':
     client_ = Client("not_Maccabi",13117)
 
     #serverThread = Thread(target=server.start_server_end_server(),daemon=True)
-    clientThread = Thread(target=client.start(),daemon=True)
-    client_Thread = Thread(target=client_.start(),daemon=True)
+    clientThread = Thread(target=client.start())
+    client_Thread = Thread(target=client_.start())
 
 
     #serverThread.start()
