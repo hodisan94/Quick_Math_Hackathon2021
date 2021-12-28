@@ -52,8 +52,27 @@ class Server:
 
     #TODO start game , end game, measure time , start server....
 
+    def start_server(self):
+        t1 = Thread(target=self.broadcast(), daemon=True)
+        t2 = Thread(target=self.looking_for_mighty_and_fearless_players(), daemon=True)
+
+        t1.start()
+        t2.start()
+
+        #join?
+
+        #waiting 10 sec before starting the game for the clients
+        time.sleep(10)
+        self.start_game()
 
 
+    def start_game(self):
+
+        nice_msg = "Welcome to Quick Math.'\n \"" \
+                   "Player 1: " + self.player_client1_name +"\n " \
+                   "Player 2: " + self.player_client2_name +"\n " \
+                   "==\n"\
+                   "Please answer the following question as fast as you can:"
 
 
 
