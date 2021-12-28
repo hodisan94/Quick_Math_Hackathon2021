@@ -21,7 +21,7 @@ class Client:
         '''
         self.team_name = team_name
         self.__udp_port = udp_port
-        self.__udp_socket = None
+        self._udp_socket = None
         self.__tcp_port = tcp_port
         self.__tcp_socket = None
         self.magic_cookie = 0xabcddcba
@@ -58,7 +58,7 @@ class Client:
             try:
                 # socket.AF_INET AF_INET - family = Internet
                 # socket.SOCK_DGRAM - type UDP
-                self.__udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                self._udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 socket_exists = True
             except socket.error:
                 # print("Something goes bananas --> solve your UDP problems")
@@ -68,24 +68,25 @@ class Client:
         https: // stackoverflow.com / questions / 6380057 / python - binding - socket - address - already - in -use
         https://docs.python.org/3/library/socket.html
         """
-        self.__udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.__udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1) # https://gist.github.com/cry/9e435d54cbe95fe9fddc2e0596409265
-        self.__udp_socket.bind(("", self.__udp_port))
+        self._udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self._udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1) # https://gist.github.com/cry/9e435d54cbe95fe9fddc2e0596409265
+        self._udp_socket.bind(("", self.__udp_port))
         while True:#TODO: how we prevent inf loop?
             """
             get masseage from server
             https://pythontic.com/modules/socket/recvfrom
             message , address = self.udp_socket.recvfrom(1024)
             """
-            message,address = self.__udp_socket.recvfrom(2048)
+            message,address = self._udp_socket.recvfrom(1024)
             #TODO : talk about the message foramt!!!
             magic_cookie_received,message_type_received,server_port = struct.unpack("IbH",message)
             #sainty check
             if (magic_cookie_received==self.magic_cookie and message_type_received==self.message_type):
-                colors.print_Green("Received offer from ",address[0],",attempting to connect...")
+                #colors.print_Green("Received offer from ",address[0],",attempting to connect...")
+                print("Received offer from ", address[0], ",attempting to connect...")
                 return self.connect(address,server_port)
 
-    def connent(self,address,server_port):
+    def connect(self,address,server_port):
         '''
         client state : Connecting to a server
         connent to server with TCP
@@ -97,11 +98,14 @@ class Client:
         #socket.SOCK_STREAM - TCP connection
         try:
             self.__tcp_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-            self.__tcp_socket.connect(address,server_port)
+            print("101")
+            self.__tcp_socket.connect((address[0],server_port))
+            print("102")
             self.__tcp_socket.send(bytes(self.team_name + "\n",'UTF-8'))
+            print("103")
             return self.play()
         except:#connect failed - go back to "client state : Looking for a server"
-            self.__tcp_socket.close()
+            #self.__tcp_socket.close()
             colors.print_Red("There were problems with this server...\n(wait until you see what it looks like ...).\nNo matter, there are plenty of other servers in Hackathon so I'm back to listening for offer requests from other servers...")
             try:
                 self.__tcp_socket.close()

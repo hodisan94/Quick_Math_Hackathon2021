@@ -1,5 +1,6 @@
 import random
 import socket
+import struct
 import time
 from threading import Thread , Event
 
@@ -16,10 +17,10 @@ class Server:
         self.ip = socket.gethostbyname(socket.gethostname())
         self.magicCookie = 0xabcddcba
         self.msg_type = 0x2
-        self.msg = self.magicCookie.to_bytes(byteorder='big', length=4) + self.msg_type.to_bytes(byteorder='big', length=1) + self.tcp_port.to_bytes(byteorder='big', length=2)
-
+        #self.msg = self.magicCookie.to_bytes(byteorder='big', length=4) + self.msg_type.to_bytes(byteorder='big', length=1) + self.tcp_port.to_bytes(byteorder='big', length=2)
+        self.msg = struct.pack("IbH",self.magicCookie,self.msg_type,self.tcp_port)
         self.tcp_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        self.tcp_socket.bind(("" , self.tcp_port))
+        self.tcp_socket.bind(('127.0.0.1', self.tcp_port))
 
         self.player_client1 = None
         self.player_client1_name = None
@@ -170,10 +171,11 @@ class Server:
     #     time.sleep(1.5)
     #     print("Game over, sending out offer requests...")
 
-# if __name__ == '__main__':
-#     while True:
-#         new_server = Server(2049)
-#         new_server.start_server_end_server()
+if __name__ == '__main__':
+    new_server = Server(2049)
+    serverT = Thread(target=new_server.start_server_end_server(),daemon=True)
+    serverT.start()
+    #new_server.start_server_end_server()
 
 
 
