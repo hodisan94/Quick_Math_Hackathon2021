@@ -18,9 +18,10 @@ class Server:
         self.magicCookie = 0xabcddcba
         self.msg_type = 0x2
         #self.msg = self.magicCookie.to_bytes(byteorder='big', length=4) + self.msg_type.to_bytes(byteorder='big', length=1) + self.tcp_port.to_bytes(byteorder='big', length=2)
-        self.msg = struct.pack("IbH",self.magicCookie,self.msg_type,self.tcp_port)
+        self.msg = struct.pack(">IbH",self.magicCookie,self.msg_type,self.tcp_port)
         self.tcp_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        self.tcp_socket.bind(('127.0.0.1', self.tcp_port))
+
+        self.tcp_socket.bind(("", self.tcp_port))
 
         self.player_client1 = None
         self.player_client1_name = None
@@ -38,7 +39,7 @@ class Server:
         while not self.check_players():
 
             self.broad_udp_socket.sendto(self.msg , ('255.255.255.255', self.udp_port))
-            time.sleep(0.1)
+            time.sleep(1)
 
 
     def looking_for_mighty_and_fearless_players(self): #TODO need check this...
@@ -53,15 +54,15 @@ class Server:
             elif self.player_client2 is None:
                 client_connection, client_address = self.tcp_socket.accept()
                 self.player_client2 = client_connection
-                self.player_client2_name = self.player_client1.recv(1024).decode('UTF-8')
+                self.player_client2_name = self.player_client2.recv(1024).decode('UTF-8')
                 print("Received offer from " +str(self.player_client1) + ", attempting to connect...")
 
 
 
 
     def start_server_end_server(self):
-        t1 = Thread(target=self.broadcast(), daemon=True)
-        t2 = Thread(target=self.looking_for_mighty_and_fearless_players(), daemon=True)
+        t1 = Thread(target=self.broadcast, daemon=True)
+        t2 = Thread(target=self.looking_for_mighty_and_fearless_players, daemon=True)
 
         t1.start()
         t2.start()
@@ -91,12 +92,9 @@ class Server:
         num1 = random.randint(0,9)
         num2 = random.randint(0,(9-num1))
         res = num1+num2
-        nice_msg = "Welcome to Quick Math.'\n \"" \
-                   "Player 1: " + self.player_client1_name +"\n " \
-                   "Player 2: " + self.player_client2_name +"\n " \
-                   "==\n"\
-                   "Please answer the following question as fast as you can:\n"\
-                   "How much is " +str(num1) + "+" + str(num2)+"?"
+        print(self.player_client1_name)
+        print(self.player_client2_name)
+        nice_msg = "Welcome to Quick Math \nPlayer 1: " + self.player_client1_name +"\nPlayer 2: " + self.player_client2_name +"\n==\n"+"Please answer the following question as fast as you can:\nHow much is " +str(num1) + "+" + str(num2)+"?"
 
         #sending the starting msg to both clients
         self.player_client1.send(bytes(nice_msg, 'UTF-8'))
@@ -141,9 +139,11 @@ class Server:
 
 
     def get_answer(self , player , event , winner_info_list , num):
+        print("Hi i am in 142 server")
         right_now = time.time()
         limit_time = right_now+10
-        while event.is_set() is False:
+        player.setblocking(0)
+        while not event.is_set():
             try:
                 winner_info_list[0] = player.recv(1024) #answer
                 winner_info_list[1] = player #the player
@@ -152,11 +152,13 @@ class Server:
             #reached time limit
             if time.time() > limit_time:
                 event.set()
-                break
+                #print("timeout")
+                return
             #check if we got an answer by now
             if len(winner_info_list) != 0:
-                event.set()
-                break
+                return
+                # event.set()
+                # break
 
     # only need to finish running the server...and maybe change to format of the message that we are sending
 
@@ -171,10 +173,10 @@ class Server:
     #     time.sleep(1.5)
     #     print("Game over, sending out offer requests...")
 
-if __name__ == '__main__':
-    new_server = Server(2049)
-    serverT = Thread(target=new_server.start_server_end_server())
-    serverT.start()
+# if __name__ == '__main__':
+#     new_server = Server(2045)
+#     serverT = Thread(target=new_server.start_server_end_server)
+#     serverT.start()
     #new_server.start_server_end_server()
 
 

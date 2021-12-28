@@ -11,27 +11,27 @@ def print_hi(name):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    #server = Server(2049)
-    client = Client("Maccabi",13117)
-    client_ = Client("not_Maccabi",13117)
+    server = Server(2049)
+    client = Client("Maccabi")
+    client_ = Client("not_Maccabi")
 
-    #serverThread = Thread(target=server.start_server_end_server(),daemon=True)
-    clientThread = Thread(target=client.start())
-    client_Thread = Thread(target=client_.start())
+    serverThread = Thread(target=server.start_server_end_server,daemon=True)
+    clientThread = Thread(target=client.start)
+    client_Thread = Thread(target=client_.start)
 
 
-    #serverThread.start()
+    serverThread.start()
 
     clientThread.start()
     client_Thread.start()
 
-    #serverThread.join()
+    serverThread.join()
+    clientThread.join()
+    client_Thread.join()
 
 
 
 
-
-colors.print_Green("HI Daniel, the color of this message is the color of the best football team in israel !!!")
 
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
