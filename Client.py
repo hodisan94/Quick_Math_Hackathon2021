@@ -60,28 +60,30 @@ class Client:
                 # socket.SOCK_DGRAM - type UDP
                 self.__udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 socket_exists = True
-            except socket.error as err:
+            except socket.error:
                 # print("Something goes bananas --> solve your UDP problems")
                 continue
-        # socket.setsocketopt() need to done before bind
-        # https: // stackoverflow.com / questions / 6380057 / python - binding - socket - address - already - in -use
-        # https://docs.python.org/3/library/socket.html
+        """
+        socket.setsocketopt() need to done before bind
+        https: // stackoverflow.com / questions / 6380057 / python - binding - socket - address - already - in -use
+        https://docs.python.org/3/library/socket.html
+        """
         self.__udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        # https://gist.github.com/cry/9e435d54cbe95fe9fddc2e0596409265
-        self.__udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self.__udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1) # https://gist.github.com/cry/9e435d54cbe95fe9fddc2e0596409265
         self.__udp_socket.bind("", self.__udp_port)
         while True:#TODO: how we prevent inf loop?
-            #get masseage from server
-            #https://pythontic.com/modules/socket/recvfrom
-            #message , address = self.udp_socket.recvfrom(1024)
-            message , address = self.__udp_socket.recvfrom(2048)
+            """
+            get masseage from server
+            https://pythontic.com/modules/socket/recvfrom
+            message , address = self.udp_socket.recvfrom(1024)
+            """
+            message,address = self.__udp_socket.recvfrom(2048)
             #TODO : talk about the message foramt!!!
-            magic_cookie_received,message_type_received,server_port = struct.unpack("IbH",message)
+            magic_cookie_received,message_type_received,server_port = struct.unpack("hhi",message)
             #sainty check
             if (magic_cookie_received==self.magic_cookie and message_type_received==self.message_type):
                 colors.print_Green("Received offer from ",address[0],",attempting to connect...")
-                self.connect(address,server_port)
-                break
+                return self.connect(address,server_port)
 
     def connent(self,address,server_port):
         '''
@@ -97,10 +99,17 @@ class Client:
             self.__tcp_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
             self.__tcp_socket.connect(address,server_port)
             self.__tcp_socket.send(bytes(self.team_name + "\n",'UTF-8'))
-            self.play()
-        except:#connect failed
-            #TODO:
-            return False
+            return self.play()
+        except:#connect failed - go back to "client state : Looking for a server"
+            self.__tcp_socket.close()
+            colors.print_Red("There were problems with this server...\n(wait until you see what it looks like ...).\nNo matter, there are plenty of other servers in Hackathon so I'm back to listening for offer requests from other servers...")
+            try:
+                self.__tcp_socket.close()
+            except socket.error:
+                self.__tcp_socket = None
+            self.__tcp_port = None
+            self.__tcp_socket = None
+            return self.open_for_offers()
 
     def play(self):
         '''
@@ -121,11 +130,14 @@ class Client:
             colors.print_Red("Server disconnected, listening for offer requests...")
             self.__tcp_port = None
             self.__tcp_socket = None
-            self.open_for_offers()
+            return self.open_for_offers()
         except:
-            colors.print_Red("could not close tcp socket")
-            #TODO: what todo if we goes here?
-            return False
+            colors.print_Red("There are some issues with closing this TCP connection...\nHope we did not break the internet ;-(")
+            colors.print_Red("Server disconnected, listening for offer requests...")
+            self.__tcp_port = None
+            self.__tcp_socket = None
+            return self.open_for_offers()
+
 
 
 
