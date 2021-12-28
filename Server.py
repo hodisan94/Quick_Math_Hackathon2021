@@ -37,7 +37,7 @@ class Server:
         while not self.check_players():
 
             self.broad_udp_socket.sendto(self.msg , ('255.255.255.255', self.udp_port))
-            time.sleep(1)
+            time.sleep(0.1)
 
 
     def looking_for_mighty_and_fearless_players(self): #TODO need check this...
@@ -170,10 +170,10 @@ class Server:
     #     time.sleep(1.5)
     #     print("Game over, sending out offer requests...")
 
-if __name__ == '__main__':
-    while True:
-        new_server = Server(2049)
-        new_server.start_server_end_server()
+# if __name__ == '__main__':
+#     while True:
+#         new_server = Server(2049)
+#         new_server.start_server_end_server()
 
 
 

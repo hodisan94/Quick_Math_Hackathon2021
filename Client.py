@@ -70,7 +70,7 @@ class Client:
         """
         self.__udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.__udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1) # https://gist.github.com/cry/9e435d54cbe95fe9fddc2e0596409265
-        self.__udp_socket.bind("", self.__udp_port)
+        self.__udp_socket.bind(("", self.__udp_port))
         while True:#TODO: how we prevent inf loop?
             """
             get masseage from server

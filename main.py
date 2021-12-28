@@ -1,8 +1,7 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from threading import Thread
 import colors
+from Client import Client
+from Server import Server
 
 
 def print_hi(name):
@@ -12,7 +11,24 @@ def print_hi(name):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    server = Server(2049)
+    client = Client("Maccabi")
+    client_ = Client("not_Maccabi")
+
+    serverThread = Thread(target=server.start_server_end_server(),daemon=True)
+    clientThread = Thread(target=client.start())
+    client_Thread = Thread(target=client_.start(),daemon=True)
+
+
+    serverThread.start()
+    clientThread.start()
+    client_.start()
+
+    serverThread.join()
+
+
+
+
 
 colors.print_Green("HI Daniel, the color of this message is the color of the best football team in israel !!!")
 
