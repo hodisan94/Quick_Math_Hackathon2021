@@ -170,6 +170,10 @@ class Server:
     #     time.sleep(1.5)
     #     print("Game over, sending out offer requests...")
 
+if __name__ == '__main__':
+    while True:
+        new_server = Server(2049)
+        new_server.start_server_end_server()
 
 
 
