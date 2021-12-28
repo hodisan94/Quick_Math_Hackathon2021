@@ -11,21 +11,21 @@ def print_hi(name):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    server = Server(2049)
+    #server = Server(2049)
     client = Client("Maccabi")
     client_ = Client("not_Maccabi")
 
-    serverThread = Thread(target=server.start_server_end_server,daemon=True)
+    #serverThread = Thread(target=server.start_server_end_server,daemon=True)
     clientThread = Thread(target=client.start)
     client_Thread = Thread(target=client_.start)
 
 
-    serverThread.start()
+    #serverThread.start()
 
     clientThread.start()
     client_Thread.start()
 
-    serverThread.join()
+    #serverThread.join()
     clientThread.join()
     client_Thread.join()
 
