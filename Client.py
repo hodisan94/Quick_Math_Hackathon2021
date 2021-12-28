@@ -121,6 +121,7 @@ class Client:
         #TODO: decide which library to use - msvcrt or keyboard
         #msvcrt
         answer = msvcrt.getch()
+        #answer = msvcrt.getch.getch()
         if (answer!='\000' and answer!='\xe0' and answer!=None):
             self.__tcp_socket.send(answer)
         end_message = self.__tcp_socket.recv(1024).decode('UTF-8')
