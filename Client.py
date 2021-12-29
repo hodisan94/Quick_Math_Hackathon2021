@@ -2,9 +2,9 @@ import socket
 import struct
 #https://docs.python.org/3/library/struct.html
 import time
-import msvcrt
+#import msvcrt
 import colors
-
+import scapy.all as scapy
 
 class Client:
     '''
@@ -14,7 +14,7 @@ class Client:
     ● Game mode - collect characters from the keyboard and send them over TCP. collect
         data from the network and print it on screen.
     '''
-    def __init__(self,team_name,udp_port=13117,tcp_port=None):
+    def _init_(self,team_name,udp_port=13117,tcp_port=None):
         '''
         :param port: port number for tcp connection
         :param team : team name
@@ -29,9 +29,9 @@ class Client:
         self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         #self.udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1) # https://gist.github.com/cry/9e435d54cbe95fe9fddc2e0596409265
-        self.udp_socket.bind(('', self.udp_port))
+        self.udp_socket.bind(('.'.join(scapy.get_if_addr("eth1").split('.')[:2])+".255.255", self.udp_port))
         self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
+        self.start()
 
 
     def start(self):
@@ -66,12 +66,15 @@ class Client:
             message , address = self.udp_socket.recvfrom(1024)
             """
             message,address = self.udp_socket.recvfrom(1024)
-            magic_cookie_received,message_type_received,server_port = struct.unpack(">IbH",message)
+            try:
+                magic_cookie_received,message_type_received,server_port = struct.unpack("IbH",message)
+            except:
+                magic_cookie_received,message_type_received,server_port = struct.unpack(">IbH",message)
             #sainty check
             if (magic_cookie_received==self.magic_cookie and message_type_received==self.message_type):
                 bla_bla = "Received offer from "+ str(address[0])+",attempting to connect..."
                 colors.print_Yellow(bla_bla)
-                return self.connect_to(address,server_port)
+                return self.connect_to(address[0],server_port)
 
     def connect_to(self,address,server_port):
         '''
@@ -90,7 +93,7 @@ class Client:
             self.tcp_socket.send(bytes(self.team_name + "\n",'UTF-8'))
         except socket.error as err:#connect failed - go back to "client state : Looking for a server"
             #self.tcp_socket.close()
-            what_he_said = "The ##*&@#*#% %##&*%*& server said me that : " + str(err)
+            what_he_said = "The ##&@##% %##&%& server said me that : " + str(err)
             colors.print_Red(what_he_said)
             colors.print_Red("So........\nThere were problems with this server...\n(wait until you see how he looks like ...)\nNo matter, there are plenty of other servers in Hackathon so I'm back to listening for offer requests from other servers...")
             try:
@@ -122,22 +125,22 @@ class Client:
         end_time=False
         end_message=None
         #msvcrt.kbhit in sinit --> https://stackoverflow.com/questions/45147008/use-getch-in-while-1-python
-        while (not msvcrt.kbhit()):
-            if end_message==None:
-                try:
-                    end_message = self.tcp_socket.recv(1024).decode('UTF-8')
-                except:
-                    continue
-            if ((start_time+10.1)<time.time()):
-                end_time=True
-                break
-        if end_time:
-            if end_message==None:
-                end_message = self.tcp_socket.recv(1024).decode('UTF-8')
-        elif end_message==None:
-            answer = msvcrt.getch()
-            self.tcp_socket.send(bytes(answer, 'UTF-8'))
-            end_message = self.tcp_socket.recv(1024).decode('UTF-8')
+        # while (not msvcrt.kbhit()):
+        #     if end_message==None:
+        #         try:
+        #             end_message = self.tcp_socket.recv(1024).decode('UTF-8')
+        #         except:
+        #             continue
+        #     if ((start_time+10.1)<time.time()):
+        #         end_time=True
+        #         break
+        # if end_time:
+        #     if end_message==None:
+        #         end_message = self.tcp_socket.recv(1024).decode('UTF-8')
+        # elif end_message==None:
+        #     answer = msvcrt.getch()
+        #     self.tcp_socket.send(bytes(answer, 'UTF-8'))
+        #     end_message = self.tcp_socket.recv(1024).decode('UTF-8')
 
         colors.print_Green(end_message)
         try:
@@ -150,7 +153,8 @@ class Client:
         self.tcp_socket = None
         return self.open_for_offers()
 
-
+if __name__ == '__main__':
+    Client("exception")
 
 
 
