@@ -118,7 +118,7 @@ class Server:
         '''
         at the start sending the math problem to both players, after that waiting to get an answer or for 10 seconds to
         pass.
-        :return: the end meesage(who won and what was the correct answer
+        :return: the end message(who won and what was the correct answer)
         '''
         #selecting two random numbers that the sum of them wont be greather then 9
         num1 = random.randint(0,9)
