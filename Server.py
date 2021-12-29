@@ -29,12 +29,20 @@ class Server:
 
 
     def check_players(self): #function to make sure the player are connected
+        '''
+        return True or False accordingly based on if we found two player or not.
+        :return: boolean
+        '''
         if self.player_client1 is None or self.player_client2 is None:
             return False
         else:
             return True
 
     def broadcast(self):
+        '''
+        broadcast every 1 second a message telling everyone..."sup homies,im here..lets play!!"
+        :return:
+        '''
         print("Server started, listening on IP address " + str(self.ip))
         while not self.check_players():
             self.broad_udp_socket.sendto(self.msg , ('255.255.255.255', self.udp_port))
@@ -42,7 +50,15 @@ class Server:
 
 
     def looking_for_mighty_and_fearless_players(self):
+        '''
+        this function is looking for players and submitting them into the server.
+        only the fearless and the mightiest players may continue..are you one of them?
+        :return:
+        '''
         #we want to find only two player
+        self.tcp_socket.listen()
+        t_broad = Thread(target=self.broadcast, daemon=True)
+        t_broad.start()
         self.tcp_socket.listen(2)
         while not self.check_players():
             if self.player_client1 is None:
@@ -56,24 +72,31 @@ class Server:
                 self.player_client2_name = self.player_client2.recv(1024).decode('UTF-8')
                 # print("Received offer from " +str(self.player_client1) + ", attempting to connect...")
 
-
+        t_broad.join()
 
 
     def start_server_end_server(self):
-        t1 = Thread(target=self.broadcast, daemon=True)
+        '''
+        The main function in the server class, waking up the threads to start broadcasting and
+        to look for clients, after that stating the quick math game for both clients(sending messages to both side)
+        after the game finishes we are closing the socket.
+        '''
+        #t1 = Thread(target=self.broadcast, daemon=True)
         t2 = Thread(target=self.looking_for_mighty_and_fearless_players, daemon=True)
 
-        t1.start()
+        #t1.start()
         t2.start()
 
         while not self.check_players():
-            time.sleep(0.1)
+            self.the_most_importent_function()
+
 
         #waiting 10 sec before starting the game for the clients
         print('\x1b[6;30;45m' + 'R U Ready to rumble ?' + '\x1b[0m')
         for i in range(0,9):
             colors.print_Cyan(10-i)
-            time.sleep(1)
+            self.even_more_importenet_function()
+            #time.sleep(1)
         print('\x1b[6;30;45m' + '     YALLA     ' + '\x1b[0m')
         colors.print_Cyan("1")
         print('\x1b[6;30;45m' + 'Open your STORY' + '\x1b[0m')
@@ -92,6 +115,11 @@ class Server:
 
 
     def start_game(self):
+        '''
+        at the start sending the math problem to both players, after that waiting to get an answer or for 10 seconds to
+        pass.
+        :return: the end meesage(who won and what was the correct answer
+        '''
         #selecting two random numbers that the sum of them wont be greather then 9
         num1 = random.randint(0,9)
         num2 = random.randint(0,(9-num1))
@@ -105,8 +133,8 @@ class Server:
         pause_event = Event()
         who_won_who_won=[]
 
-        t_for_player1 = Thread(target=self.get_answer, args=[self.player_client1, pause_event, who_won_who_won, 1])
-        t_for_player2 = Thread(target=self.get_answer, args=[self.player_client2, pause_event, who_won_who_won, 2])
+        t_for_player1 = Thread(target=self.get_answer, args=[self.player_client1, pause_event, who_won_who_won, 1]) ### need to figure out if the list really changed
+        t_for_player2 = Thread(target=self.get_answer, args=[self.player_client2, pause_event, who_won_who_won, 2]) ### need to figure out if the list really changed
 
         t_for_player1.start()
         t_for_player2.start()
@@ -138,6 +166,13 @@ class Server:
 
 
     def get_answer(self , player , event , winner_info_list , num):
+        '''
+        :param player: the player
+        :param event: event was made to notify us when something occurred so we can stop the process of waiting for a key press
+        :param winner_info_list: list that will include the answer and the player that tried to submit it.
+        :param num: dogri..we don't need it, but hey its always nice to have an extra parameter.
+        :return:
+        '''
         right_now = time.time()
         limit_time = right_now+10
         player.setblocking(0)
@@ -157,6 +192,18 @@ class Server:
                 event.set()
                 return
 
+    def the_most_importent_function(self):
+        '''
+        this function is the based function of al the system!!! without this function it probably wont work...thank god
+        someone decided to write it!
+        '''
+        time.sleep(0.1)
+
+    def even_more_importenet_function(self):
+        '''
+        the legend tells this is even more important then the last function.
+        '''
+        time.sleep(1)
 
 
 if __name__ == '__main__':
