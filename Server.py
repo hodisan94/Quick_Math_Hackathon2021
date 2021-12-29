@@ -167,7 +167,7 @@ class Server:
 
     def get_answer(self , player , event , winner_info_list , num):
         '''
-        :param player: the player
+        :param player: the player.
         :param event: event was made to notify us when something occurred so we can stop the process of waiting for a key press
         :param winner_info_list: list that will include the answer and the player that tried to submit it.
         :param num: dogri..we don't need it, but hey its always nice to have an extra parameter.
